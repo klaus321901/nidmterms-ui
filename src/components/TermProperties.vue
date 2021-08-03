@@ -2,7 +2,12 @@
     <div>
         <div class="panel panel-default">
             <div class="panel-body scroll">
-                <vue-form-generator :key="selectedTerm" :schema="schema" :model="model" :options="formOptions"></vue-form-generator>
+                <vue-form-generator
+                        :key="selectedTerm"
+                        :schema="schema"
+                        :model="model"
+                        :options="formOptions">
+                </vue-form-generator>
                 <b-button @click="onSave">Save</b-button>
             </div>
         </div>
@@ -86,7 +91,6 @@
         components: {
             "vue-form-generator": VueFormGenerator.component
         },
-
         data() {
             return {
                 model: {
@@ -96,6 +100,7 @@
                     url: '',
                     valueType: '',
                     isAbout: [],
+                    type: [],
                     datumType: '',
                     unitCode: '',
                     maxValue: '' ,
@@ -105,7 +110,9 @@
                     derivative: '',
                     citation: '',
                     measureOf: '',
-                    provenance: ''
+                    provenance: '',
+                    required: '',
+                    readonly: []
                 },
                 schema: {
                     groups: [
@@ -122,7 +129,8 @@
                                 featured: true,
                                 disabled: false,
                                 validator: VueFormGenerator.validators.string
-                            }, {
+                            },
+                                {
                                 type: "input",
                                 inputType: "text",
                                 label: "Source variable",
@@ -132,7 +140,8 @@
                                 featured: true,
                                 required: false,
                                 disabled: true
-                            }, {
+                            },
+                                {
                                 type: "input",
                                 inputType: "text",
                                 label: "Description",
@@ -141,7 +150,8 @@
                                 required: false,
                                 hint: "An explanation of the nature, scope, or meaning of the new term.",
                                 validator: VueFormGenerator.validators.string
-                            }, {
+                            },
+                                {
                                 type: "select",
                                 inputType: "text",
                                 label: "valueType",
@@ -153,7 +163,8 @@
                                 multiSelect: false,
                                 noneSelectedText: 'Select one',
                                 values: ['string', 'boolean', 'integer', 'float', 'double', 'duration', 'datetime', 'time', 'date', 'anyURI', 'complexType']
-                            }, {
+                            },
+                                {
                                 type: "input",
                                 inputType: 'text',
                                 label: "datumType",
@@ -163,7 +174,8 @@
                                 featured: true,
                                 disabled: false,
                                 validator: VueFormGenerator.validators.string
-                            }, {
+                            },
+                                {
                                 type: "input",
                                 inputType: 'text',
                                 label: "Unit",
@@ -173,7 +185,8 @@
                                 featured: true,
                                 disabled: false,
                                 validator: VueFormGenerator.validators.string
-                            }, {
+                            },
+                                {
                                 type: "input",
                                 inputType: "number",
                                 label: "Min Value",
@@ -182,7 +195,8 @@
                                 featured: true,
                                 disabled: false,
                                 validator: VueFormGenerator.validators.number
-                            }, {
+                            },
+                                {
                                 type: "input",
                                 inputType: 'number',
                                 label: "Max Value",
@@ -191,7 +205,8 @@
                                 featured: true,
                                 disabled: false,
                                 validator: VueFormGenerator.validators.number
-                            }, {
+                            },
+                                {
                                 type: "checklist",
                                 label: "isAbout",
                                 model: "isAbout",
@@ -203,56 +218,37 @@
                                 hint: "An explanation of the nature, scope, or meaning of the new term.",
                                 help: "Check right column for definition of the related concept terms",
                                 validator: VueFormGenerator.validators.array,
-                            },
-                            {
-                                type: "array",
-                                label: "Choices",
-                                model: "choices",
-                                featured: true,
-                                showRemoveButton: true,
-                                placeholder: "Name",
-                                // newElementButtonLabelClasses: "btn btn-solid",
-                                // newElementButtonLabel: "Add new Option",
-                                validator: VueFormGenerator.validators.array,
-                            }]
+                            }
+                            ]
+                        },
+                        {
+                            styleClasses: "choices-group",
+                            legend: "Choices",
+                            fields: [
+                                {
+                                    type: "array",
+                                    label: "Name",
+                                    model: "choices",
+                                    featured: true,
+                                    showRemoveButton: true,
+                                    styleClasses: "col-sm-5",
+                                    placeholder: "Name",
+                                    // newElementButtonLabelClasses: "btn btn-solid",
+                                    // newElementButtonLabel: "Add new Option",
+                                    // validator: VueFormGenerator.validators.array,
+                                },
+                                {
+                                    type: "array",
+                                    label: "Value",
+                                    model: "readonly",
+                                    featured: true,
+                                    showRemoveButton: true,
+                                    styleClasses: "col-sm-5",
+                                    placeholder: "Value",
+                                }
+
+                            ]
                         }
-                        // {
-                        //     styleClasses: "choices-group",
-                        //     fields: [
-                        //         {
-                        //             type: "array",
-                        //             label: "Choices",
-                        //             model: "choices",
-                        //             featured: true,
-                        //             showRemoveButton: true,
-                        //             // newElementButtonLabelClasses: "btn btn-solid",
-                        //             // newElementButtonLabel: "Add new Option",
-                        //             validator: VueFormGenerator.validators.array,
-                        //         },
-                        //         {
-                        //             type: "input",
-                        //             inputType: "text",
-                        //             label: "Name",
-                        //             model: "name",
-                        //             hint: "Label for the term",
-                        //             readonly: false,
-                        //             featured: true,
-                        //             disabled: false,
-                        //             validator: VueFormGenerator.validators.string
-                        //         },
-                        //         {
-                        //             type: "input",
-                        //             inputType: "text",
-                        //             label: "Value",
-                        //             model: "value",
-                        //             hint: "Value for the choice",
-                        //             readonly: false,
-                        //             featured: true,
-                        //             disabled: false,
-                        //             validator: VueFormGenerator.validators.string
-                        //         }
-                        //     ]
-                        // }
                     ]
                 },
                 interlexTerms: [],
@@ -269,7 +265,7 @@
                 immediate: true,
                 handler(newVal) {
                     const searchLabels = _.map(newVal, s => {
-                        return s['_source']['label'];
+                        return s['label'];
                     });
                 searchLabels.unshift('No concept needed');
                 this.schema.groups[0].fields[8].values = searchLabels;
