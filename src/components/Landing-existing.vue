@@ -42,6 +42,16 @@
                         </b-card-text>
                     </b-card>
                 </b-card-group>
+                <div class="mt-3">
+                    <b-card-group deck>
+                        <b-card title="BIDS Terms" class="text-center">
+                            <b-card-text>
+                                <a href="https://nidm-terms.github.io/">Explore the terminology</a>
+<!--                                <router-link class="card-link" :to="{ path: 'BIDS-terms' }">Explore the terminology</router-link>-->
+                            </b-card-text>
+                        </b-card>
+                    </b-card-group>
+                </div>
             </div>
         </div>
     </div>

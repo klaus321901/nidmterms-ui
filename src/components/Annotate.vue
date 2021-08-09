@@ -13,8 +13,10 @@
                 </div>
                 <div>
                     <SourceVariableList :terms1="sourceList" :completed="completed"
+                                        :broadenConceptSearch="broadenConceptSearch"
                                         v-on:termSearchResult="searchList"
                                         v-on:termSelect="showTermProperties"
+                                        v-on:nidmConceptFound="showBroaden"
                     ></SourceVariableList>
                 </div>
             </div>
@@ -26,14 +28,21 @@
                     <TermProperties :key="selectedTerm" :init="responses[selectedTerm]"
                                     v-if="showForm" :selectedTerm="selectedTerm"
                                     :searchResults="interlexTerms"
+                                    :selectedConcepts="concepts[selectedTerm]"
                                     v-on:saveResponse="setResponse"></TermProperties>
                 </transition>
             </div>
             <div id="sidebar-right" v-if="selectedTerm">
                 <div class="col-header">
-                    <p><b>Interlex Search</b></p>
+                    <p><b>Concepts Search</b></p>
                 </div>
-                <InterlexSearchList :terms="interlexTerms"></InterlexSearchList>
+                <InterlexSearchList :key="selectedTerm" :terms="interlexTerms" :broaden="showBroadenButton"
+                                    :selectedTerm="selectedTerm"
+                                    :init="concepts[selectedTerm]"
+                                    v-on:broadenSearch="broadenSearchList"
+                                    v-on:termSelect="updateConceptList"
+                                    v-on:saveCheckedConcepts="setConcepts"
+                ></InterlexSearchList>
             </div>
         </b-container>
         <div class="download-btn" v-if="isAnnotated">
@@ -69,8 +78,12 @@
                 image: { backgroundImage: "static/images/nidm-terms-background.png" },
                 showForm: false,
                 responses: {},
+                concepts: {},
                 completed: {},
-                isAnnotated: false
+                isAnnotated: false,
+                showBroadenButton: false,
+                broadenConceptSearch: false,
+                selectedConcepts: []
             }
         },
         watch: {
@@ -81,6 +94,14 @@
                   // eslint-disable-next-line
                   // console.log(82, 'in resp watcher ', newVal, _.isEmpty(newVal), this.isAnnotated);
 
+                }
+            },
+            concepts: {
+                deep: true,
+                handler(newVal) {
+                    // eslint-disable-next-line
+                    console.log(103, 'in concepts watcher ', newVal);
+                    this.$forceUpdate();
                 }
             },
             interlexTerms() {
@@ -161,16 +182,29 @@
                 });
             },
             searchList(termList) {
+                // eslint-disable-next-line no-console
+                // console.log(164, termList);
                 this.interlexTerms = termList;
             },
             showTermProperties(termSelected) {
                 this.selectedTerm = termSelected;
                 this.showForm = true;
             },
-            setResponse(selectedTerm, annotations) {
+            showBroaden(showB) {
+                this.showBroadenButton = showB;
+            },
+            broadenSearchList() {
+                this.broadenConceptSearch = true;
+            },
+            updateConceptList(val) {
+                // eslint-disable-next-line no-console
+                console.log(187, val);
+                this.selectedConcepts = val;
+            },
+            setResponse(selectedTerm, annotations, isAboutList) {
+                this.$set(this.responses, selectedTerm, annotations, isAboutList);
                 // eslint-disable-next-line
-                // console.log(104, selectedTerm, annotations, Object.keys(annotations));
-                this.$set(this.responses, selectedTerm, annotations);
+                console.log(104, selectedTerm, annotations, isAboutList);
                 // this.responses[selectedTerm] = annotations;
                 // todo: check if all properties are set and then set completed to true or false
                 if (annotations) { //change the condition
@@ -178,6 +212,13 @@
                     // eslint-disable-next-line
                     // console.log(128, 'in setResponse set cond', this.completed, Object.values(annotations));
                 } else this.$set(this.completed, selectedTerm, false);
+            },
+            setConcepts(selectedTerm, selectedConcepts) {
+                // eslint-disable-next-line no-console
+                console.log(210, selectedTerm, selectedConcepts);
+                this.$set(this.concepts, selectedTerm, selectedConcepts);
+                // eslint-disable-next-line no-console
+                console.log(213, this.concepts);
             }
         },
 

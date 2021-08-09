@@ -86,7 +86,8 @@
         props: {
             selectedTerm: String,
             init: Object,
-            searchResults: Array
+            searchResults: Array,
+            selectedConcepts: Array
         },
         components: {
             "vue-form-generator": VueFormGenerator.component
@@ -256,7 +257,8 @@
                     validateAfterLoad: true,
                     validateAfterChanged: true,
                     validateAsync: true
-                }
+                },
+                final_list: []
             };
         },
         watch: {
@@ -271,13 +273,49 @@
                 this.schema.groups[0].fields[8].values = searchLabels;
                 }
             },
+            selectedConcepts: {
+               handler(newVal) {
+
+                       const finallist = _.map(newVal, url => {
+                           const s = _.find(this.searchResults, concept => {
+                               return concept.url === url;
+                               // const newObj = { '@id': concept['url'],
+                               //                  'label': concept.label};
+                               // // delete concept.description;
+                               // // delete Object.assign(concept, {['@id']: concept['url'] })['url'];
+                               // return newObj;
+                           });
+                           // eslint-disable-next-line no-console
+                           // console.log(281, s);
+                           let newObj = {};
+                           if (s) {
+                               newObj = { '@id': s['url'],
+                                   'label': s.label};
+                           }
+                           return newObj;
+                       });
+
+                   // _.filter(this.searchResults, concept => {
+                   //     if (concept.url )
+                   //     return concept.url === newVal;
+                   // });
+                   // const select_concept_lst = []
+                   this.model.isAbout = finallist;
+                   // eslint-disable-next-line no-console
+                   // console.log(272, newVal);
+               }
+            }
         },
         methods: {
             onSave() {
-                this.$emit('saveResponse', this.selectedTerm, this.model);
+                // eslint-disable-next-line no-console
+                // console.log(284, this.model);
+                this.$emit('saveResponse', this.selectedTerm, this.model, this.final_list);
             },
         },
         mounted() {
+            // eslint-disable-next-line no-console
+            // console.log(317, this.selectedConcepts, this.init);
             if (this.init) {
                 this.model = this.init;
             }

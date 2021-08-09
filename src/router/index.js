@@ -4,6 +4,7 @@ import TermDetail from "../components/TermDetail";
 import Annotate from "../components/Annotate";
 import Landing from "../components/Landing-existing";
 import About from "../components/About";
+// import BIDSTerms from "../components/terms/BIDSTerms";
 
 Vue.use(Router);
 
@@ -34,6 +35,12 @@ export default new Router({
             name: 'Annotate',
             component: Annotate,
         },
+        // {
+        //     path: '/BIDS-terms',
+        //     redirect: 'https://nidm-terms.github.io/',
+        //     name: 'BIDSTerms',
+        //     component: BIDSTerms,
+        // },
         {
             path: '/about',
             name: 'About',
