@@ -50,7 +50,6 @@
                 // console.log(47, term, index);
                 this.activeIndex = index;
                 this.$emit('termSelect', term);
-
                 // const query = {
                 //     query: {
                 //         bool: {

@@ -98,9 +98,10 @@
             },
             concepts: {
                 deep: true,
+                // eslint-disable-next-line no-unused-vars
                 handler(newVal) {
                     // eslint-disable-next-line
-                    console.log(103, 'in concepts watcher ', newVal);
+                    // console.log(103, 'in concepts watcher ', newVal);
                     this.$forceUpdate();
                 }
             },
@@ -109,9 +110,10 @@
             },
             completed: {
                 deep: true,
+                // eslint-disable-next-line no-unused-vars
                 handler(newVal) {
                     // eslint-disable-next-line
-                    console.log(92, 'in completed watcher ', this.selectedTerm, newVal);
+                    // console.log(92, 'in completed watcher ', this.selectedTerm, newVal);
                 }
             },
         },
@@ -161,17 +163,23 @@
                     const annotatedValue = {
                         "label": key,
                         "description": value.description,
-                        "sameAs": "https://ndar.nih.gov/api/datadictionary/v2/dataelement/src_subject_id",
                         "sourceVariable": value.sourceVariable,
                         "isAbout": value.isAbout
                     };
                     responseOptions.valueType = `xsd:${value.valueType}`;
-                    if (value.choicesName.length && value.readonly.length) {
+                    if (value.hasUnit) {
+                        responseOptions.hasUnit = value.hasUnit;
+                    }
+                    if (value.minValue !== '') {
+                        responseOptions.minValue = value.minValue;
+                    }
+                    if (value.maxValue !== '') {
+                        responseOptions.maxValue = value.maxValue;
+                    }
+                    if (value.choicesName.length && value.choicesValue.length) {
                         let choices_list = [];
                         value.choicesName.forEach((num1, index) => {
-                            const num2 = value.readonly[index];
-                            // eslint-disable-next-line no-console
-                            console.log(num1, num2);
+                            const num2 = value.choicesValue[index];
                             choices_list.push({'name': num1, 'value': num2});
                         });
                         responseOptions.choices = choices_list;

@@ -113,7 +113,7 @@
                     measureOf: '',
                     provenance: '',
                     required: '',
-                    readonly: []
+                    choicesValue: []
                 },
                 schema: {
                     groups: [
@@ -180,7 +180,7 @@
                                 type: "input",
                                 inputType: 'text',
                                 label: "Unit",
-                                model: "hasUnit",
+                                model: "unitCode",
                                 hint: "Unit of measurement following BIDS specification",
                                 readonly: false,
                                 featured: true,
@@ -191,7 +191,7 @@
                                 type: "input",
                                 inputType: "number",
                                 label: "Min Value",
-                                model: "minimumValue",
+                                model: "minValue",
                                 readonly: false,
                                 featured: true,
                                 disabled: false,
@@ -201,7 +201,7 @@
                                 type: "input",
                                 inputType: 'number',
                                 label: "Max Value",
-                                model: "maximumValue",
+                                model: "maxValue",
                                 readonly: false,
                                 featured: true,
                                 disabled: false,
@@ -233,7 +233,6 @@
                                     featured: true,
                                     showRemoveButton: true,
                                     styleClasses: "col-sm-5",
-                                    placeholder: "Name",
                                     // newElementButtonLabelClasses: "btn btn-solid",
                                     // newElementButtonLabel: "Add new Option",
                                     // validator: VueFormGenerator.validators.array,
@@ -241,11 +240,10 @@
                                 {
                                     type: "array",
                                     label: "Value",
-                                    model: "readonly",
+                                    model: "choicesValue",
                                     featured: true,
                                     showRemoveButton: true,
                                     styleClasses: "col-sm-5",
-                                    placeholder: "Value",
                                 }
 
                             ]
@@ -309,7 +307,7 @@
         methods: {
             onSave() {
                 // eslint-disable-next-line no-console
-                console.log(284, this.model);
+                // console.log(284, this.model);
                 this.$emit('saveResponse', this.selectedTerm, this.model, this.final_list);
             },
         },
