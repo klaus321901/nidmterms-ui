@@ -155,17 +155,30 @@
                 let annotatedObject = {};
 
                 for (const [key, value] of Object.entries(responses)) {
-                    // eslint-disable-next-line
-                    // console.log(`${key}: ${value}`);
+                    let responseOptions = {};
+
                     const annotateKey = `DD(source=${this.fileInput.name}, variable=${key})`;
                     const annotatedValue = {
                         "label": key,
                         "description": value.description,
                         "sameAs": "https://ndar.nih.gov/api/datadictionary/v2/dataelement/src_subject_id",
-                        "valueType": value.valueType,
                         "sourceVariable": value.sourceVariable,
                         "isAbout": value.isAbout
                     };
+                    responseOptions.valueType = `xsd:${value.valueType}`;
+                    if (value.choicesName.length && value.readonly.length) {
+                        let choices_list = [];
+                        value.choicesName.forEach((num1, index) => {
+                            const num2 = value.readonly[index];
+                            // eslint-disable-next-line no-console
+                            console.log(num1, num2);
+                            choices_list.push({'name': num1, 'value': num2});
+                        });
+                        responseOptions.choices = choices_list;
+                    }
+                    if (!_.isEmpty(responseOptions)) {
+                        annotatedValue.responseOptions = responseOptions;
+                    }
                     annotatedObject[annotateKey] = annotatedValue;
                 }
                 return annotatedObject;
@@ -197,14 +210,12 @@
                 this.broadenConceptSearch = true;
             },
             updateConceptList(val) {
-                // eslint-disable-next-line no-console
-                console.log(187, val);
                 this.selectedConcepts = val;
             },
-            setResponse(selectedTerm, annotations, isAboutList) {
-                this.$set(this.responses, selectedTerm, annotations, isAboutList);
+            setResponse(selectedTerm, annotations) {
+                this.$set(this.responses, selectedTerm, annotations);
                 // eslint-disable-next-line
-                console.log(104, selectedTerm, annotations, isAboutList);
+                // console.log(104, selectedTerm, annotations, isAboutList);
                 // this.responses[selectedTerm] = annotations;
                 // todo: check if all properties are set and then set completed to true or false
                 if (annotations) { //change the condition
@@ -214,11 +225,7 @@
                 } else this.$set(this.completed, selectedTerm, false);
             },
             setConcepts(selectedTerm, selectedConcepts) {
-                // eslint-disable-next-line no-console
-                console.log(210, selectedTerm, selectedConcepts);
                 this.$set(this.concepts, selectedTerm, selectedConcepts);
-                // eslint-disable-next-line no-console
-                console.log(213, this.concepts);
             }
         },
 

@@ -107,7 +107,7 @@
                     maxValue: '' ,
                     minValue: '',
                     allowableValues: [],
-                    choices: [],
+                    choicesName: [],
                     derivative: '',
                     citation: '',
                     measureOf: '',
@@ -229,7 +229,7 @@
                                 {
                                     type: "array",
                                     label: "Name",
-                                    model: "choices",
+                                    model: "choicesName",
                                     featured: true,
                                     showRemoveButton: true,
                                     styleClasses: "col-sm-5",
@@ -309,7 +309,7 @@
         methods: {
             onSave() {
                 // eslint-disable-next-line no-console
-                // console.log(284, this.model);
+                console.log(284, this.model);
                 this.$emit('saveResponse', this.selectedTerm, this.model, this.final_list);
             },
         },
