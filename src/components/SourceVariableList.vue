@@ -2,14 +2,14 @@
     <div>
         <ul class="list-group">
             <!-- key property is used whenever list is updated -->
-<!--            <TermListItem-->
-<!--                    v-for="term in terms1"-->
-<!--                    :term="term"-->
-<!--                    :key="term"-->
-<!--                    :completed="completed"-->
-<!--                    @termSelect="onTermSelect"-->
-<!--            >-->
-<!--            </TermListItem>-->
+            <!--            <TermListItem-->
+            <!--                    v-for="term in terms1"-->
+            <!--                    :term="term"-->
+            <!--                    :key="term"-->
+            <!--                    :completed="completed"-->
+            <!--                    @termSelect="onTermSelect"-->
+            <!--            >-->
+            <!--            </TermListItem>-->
 
             <li class="list-group-item" v-for="(term , idx) in terms1" :key="idx+term"
                 :class="{'current-item': idx === activeIndex}" @click="onTermSelect(term, idx)">
@@ -37,12 +37,12 @@
             broadenSearch: Boolean,
         },
         data() {
-          return {
-              results: [],
-              itemCompleted: false,
-              activeIndex: null,
-              nidmConceptFound: false,
-          }
+            return {
+                results: [],
+                itemCompleted: false,
+                activeIndex: null,
+                nidmConceptFound: false,
+            }
         },
         methods: {
             async onTermSelect(term, index) {
@@ -67,11 +67,7 @@
                 // };
                 // search for concepts in NIDM_Concepts first
                 const resp = await axios.get('https://api.github.com/repos/NIDM-Terms/terms/contents/terms/NIDM_Concepts');
-                // eslint-disable-next-line no-console
-               // console.log(78, 'response is: ', resp.data);
-               const matching_names = _.filter(resp.data, concept => concept.name.search(term) !== -1);
-                // eslint-disable-next-line no-console
-               // console.log(71, matching_names);
+                const matching_names = _.filter(resp.data, concept => concept.name.search(term) !== -1);
 
                 if (matching_names.length) {
                     const promises = matching_names.map(async (match_term) => {
@@ -83,37 +79,35 @@
                     this.$emit('termSearchResult', resolved);
                     this.$emit('nidmConceptFound', true);
                     // eslint-disable-next-line no-console
-                    console.log('NIDM concepts found!!!! ', resolved);
+                    // console.log('NIDM concepts found!!!! ', resolved);
                 }
-
-               else {
+                else {
                     this.$emit('nidmConceptFound', false);
-                   // since no matching nidm concepts, now search interlex
-                   axios.get(`https://scicrunch.org/api/1/elastic/interlex/term/_search?q=${term}`, {
-                       params: {
-                           key: API_KEY
-                           // source: JSON.stringify(query),
-                           // source_content_type: 'application/json'
-                       }
-                   }).then(response => {
-                       // eslint-disable-next-line
-                       // console.log(56, term, response.data.hits.hits);
-                       const m_list = _.map(response.data.hits.hits, match1  => {
-                           const ilx_id = _.find(match1['_source']['existing_ids'], (id) => {
-                               return id.curie.startsWith('ILX:');
-                           });
-                           return { 'label': match1['_source']['label'],
-                               'description': match1['_source']['definition'],
+                    // eslint-disable-next-line no-console
+                    // console.log('NIDM concepts NOT found!!!! ');
+                    // since no matching nidm concepts, now search interlex
+                    axios.get(`https://scicrunch.org/api/1/elastic/interlex/term/_search?q=${term}`, {
+                        params: {
+                            key: API_KEY
+                            // source: JSON.stringify(query),
+                            // source_content_type: 'application/json'
+                        }
+                    }).then(response => {
+                        // eslint-disable-next-line
+                        // console.log(56, term, response.data.hits.hits);
+                        const m_list = _.map(response.data.hits.hits, match1  => {
+                            const ilx_id = _.find(match1['_source']['existing_ids'], (id) => {
+                                return id.curie.startsWith('ILX:');
+                            });
+                            return { 'label': match1['_source']['label'],
+                                'description': match1['_source']['definition'],
                                 'url': ilx_id.iri}
-                       });
-                       this.$emit('termSearchResult', m_list);
-                       // eslint-disable-next-line no-console
-                       console.log('interlex concepts found!!! ', m_list);
-                   });
-               }
-
-
-
+                        });
+                        this.$emit('termSearchResult', m_list);
+                        // eslint-disable-next-line no-console
+                        // console.log('interlex concepts found!!! ', m_list);
+                    });
+                }
             },
         },
     };

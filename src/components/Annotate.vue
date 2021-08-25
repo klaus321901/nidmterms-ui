@@ -3,8 +3,11 @@
         <div>
             <p class="upload"><b> Upload a CSV or TSV file to annotate:  </b></p>
             <input type="file" @change="onFileSelected">
-<!--            <button @click="onFileSelected">Upload</button>-->
+            <!--            <button @click="onFileSelected">Upload</button>-->
 
+        </div>
+        <div class="download-btn" v-if="isAnnotated">
+            <b-button variant="primary" @click="downloadJSONLD">Download JSON</b-button>
         </div>
         <b-container fluid class="col-container" v-if="sourceList.length">
             <div id="sidebar-left">
@@ -33,8 +36,14 @@
                 </transition>
             </div>
             <div id="sidebar-right" v-if="selectedTerm">
-                <div class="col-header">
-                    <p><b>Concepts Search</b></p>
+                <div class="col-header" style="display:flex">
+                    <div class="header-text" style="width: 40%"><p><b>Concept Search</b></p></div>
+                    <div class="concept-search">
+                        <b-form-input size="sm" class="mr-sm-2 header-text" placeholder="Search" style="width: auto"
+                                      v-model="initSearch"
+                                      @keydown.enter.native="test_enter_handler"
+                        ></b-form-input>
+                    </div>
                 </div>
                 <InterlexSearchList :key="selectedTerm" :terms="interlexTerms" :broaden="showBroadenButton"
                                     :selectedTerm="selectedTerm"
@@ -45,21 +54,21 @@
                 ></InterlexSearchList>
             </div>
         </b-container>
-        <div class="download-btn" v-if="isAnnotated">
-            <b-button variant="primary" @click="downloadJSONLD">Download JSON</b-button>
-        </div>
     </div>
 </template>
 
 <script>
     import Papa from 'papaparse';
-    import JSZip from 'jszip';
     import _ from 'lodash';
     import { saveAs } from 'file-saver';
     import 'vue-form-generator/dist/vfg.css';
     import SourceVariableList from './SourceVariableList';
     import InterlexSearchList from "./InterlexSearchList";
     import TermProperties from "./TermProperties";
+    import axios from "axios";
+
+    const API_KEY = 'CfufpoSNVXujv7h14HFHI4dL9p36mxCJ';
+
     export default {
         name: 'Annotate',
         components: {
@@ -83,16 +92,17 @@
                 isAnnotated: false,
                 showBroadenButton: false,
                 broadenConceptSearch: false,
-                selectedConcepts: []
+                selectedConcepts: [],
+                initSearch: ''
             }
         },
         watch: {
             responses: {
                 deep: true,
                 handler(newVal) {
-                  this.isAnnotated = !_.isEmpty(newVal);
-                  // eslint-disable-next-line
-                  // console.log(82, 'in resp watcher ', newVal, _.isEmpty(newVal), this.isAnnotated);
+                    this.isAnnotated = !_.isEmpty(newVal);
+                    // eslint-disable-next-line
+                    // console.log(82, 'in resp watcher ', newVal, _.isEmpty(newVal), this.isAnnotated);
 
                 }
             },
@@ -120,15 +130,14 @@
         methods: {
             downloadJSONLD() {
                 const annotatedFile = this.createAnnotatedFile(this.responses);
-                const jszip = new JSZip();
-                // eslint-disable-next-line
-                // console.log(117, this.responses);
-                jszip.folder('responses').file(`${this.fileInput.name.split('.')[0]}.json`, JSON.stringify(annotatedFile, null, 4));
-                jszip.generateAsync({ type: 'blob' })
-                    .then((myzipfile) => {
-                        const fileName = `study-data`;
-                        saveAs(myzipfile, fileName);
-                    });
+                const fileName = `${this.fileInput.name.split('.')[0]}.json`;
+                // Create a blob of the data
+                const fileToSave = new Blob([JSON.stringify(annotatedFile, null, 4)], {
+                    type: 'application/json',
+                    name: fileName
+                });
+                // Save the file
+                saveAs(fileToSave, fileName);
             },
             createAnnotatedFile(responses) {
                 // eslint-disable-next-line
@@ -190,6 +199,59 @@
                     annotatedObject[annotateKey] = annotatedValue;
                 }
                 return annotatedObject;
+            },
+            async test_enter_handler(event) {
+                // eslint-disable-next-line no-console
+                // console.log(199, event.target.value);
+                this.initSearch = event.target.value;
+                // this.activeIndex = index;
+                const term = event.target.value;
+                this.$emit('termSelect', term);
+                // search for concepts in NIDM_Concepts first
+                const resp = await axios.get('https://api.github.com/repos/NIDM-Terms/terms/contents/terms/NIDM_Concepts');
+                const matching_names = _.filter(resp.data, concept => concept.name.search(term) !== -1);
+
+                if (matching_names.length) {
+                    const promises = matching_names.map(async (match_term) => {
+                        const res = await axios.get(match_term.download_url);
+                        return res.data;
+                    });
+
+                    const resolved = await Promise.all(promises);
+                    // this.$emit('termSearchResult', resolved);
+                    this.searchList(resolved);
+                    this.$emit('nidmConceptFound', true);
+                    // eslint-disable-next-line no-console
+                    console.log('NIDM concepts found!!!! ', resolved);
+                }
+                else {
+                    this.$emit('nidmConceptFound', false);
+                    // eslint-disable-next-line no-console
+                    // console.log('NIDM concepts NOT found!!!! ');
+                    // since no matching nidm concepts, now search interlex
+                    axios.get(`https://scicrunch.org/api/1/elastic/interlex/term/_search?q=${term}`, {
+                        params: {
+                            key: API_KEY
+                            // source: JSON.stringify(query),
+                            // source_content_type: 'application/json'
+                        }
+                    }).then(response => {
+                        // eslint-disable-next-line
+                        // console.log(56, term, response.data.hits.hits);
+                        const m_list = _.map(response.data.hits.hits, match1  => {
+                            const ilx_id = _.find(match1['_source']['existing_ids'], (id) => {
+                                return id.curie.startsWith('ILX:');
+                            });
+                            return { 'label': match1['_source']['label'],
+                                'description': match1['_source']['definition'],
+                                'url': ilx_id.iri}
+                        });
+                        // this.$emit('termSearchResult', m_list);
+                        this.searchList(m_list);
+                        // eslint-disable-next-line no-console
+                        // console.log('interlex concepts found!!! ', m_list);
+                    });
+                }
             },
             onFileSelected(event) {
                 this.fileInput = event.target.files[0];
@@ -258,11 +320,22 @@
         /*border-style: solid;*/
         /*border-color: red;*/
         border-bottom: 1px solid grey;
+        text-align: center;
     }
     .col-header > p {
-        text-align: center;
         color: #444;
         padding-top: 15px;
+    }
+
+    .header-text {
+        color: #444;
+        padding-top: 15px;
+    }
+
+    .concept-search {
+        color: #444;
+        padding-top: 11px;
+        align-self: ;
     }
 
     .bv-example-row {

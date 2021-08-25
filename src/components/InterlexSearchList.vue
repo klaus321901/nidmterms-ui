@@ -107,7 +107,7 @@
         /*margin:4px;*/
         /*padding:4px;*/
 
-        overflow-y: auto;
+        overflow-y: scroll;
     }
 
     .no-match {
