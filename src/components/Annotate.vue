@@ -172,12 +172,14 @@
                     const annotatedValue = {
                         "label": key,
                         "description": value.description,
-                        "sourceVariable": value.sourceVariable,
-                        "isAbout": value.isAbout
+                        "sourceVariable": value.sourceVariable
                     };
+                    if (value.isAbout.length) {
+                        annotatedValue.isAbout = value.isAbout
+                    }
                     responseOptions.valueType = `xsd:${value.valueType}`;
-                    if (value.hasUnit) {
-                        responseOptions.hasUnit = value.hasUnit;
+                    if (value.unitCode) {
+                        responseOptions.unitCode = value.unitCode;
                     }
                     if (value.minValue !== '') {
                         responseOptions.minValue = value.minValue;
