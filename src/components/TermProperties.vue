@@ -16,12 +16,9 @@
 
 <style scoped>
     .scroll {
-        /*margin:4px;*/
-        /*padding:4px;*/
         height: 880px;
         overflow-y: auto;
     }
-
 
     h1 {
         text-align: center;
@@ -42,7 +39,6 @@
         border-radius: 4px;
         -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
         box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
-        /*border-color: #ddd;*/
     }
 
     .panel-body {
@@ -50,9 +46,7 @@
         overflow-y: scroll;
     }
 
-    .button {
-
-    }
+    .button { }
 
     .field-checklist .wrapper {
         width: 100%;
@@ -62,27 +56,27 @@
         transition: opacity .5s;
     }
 
-    .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+    .fade-enter, .fade-leave-to {
         opacity: 0;
     }
 
-    /*.field-checklist-wrapper {*/
-    /*    width: 100%;*/
-    /*}*/
     .group-one-class {
         background-color: red;
         width: 100%;
     }
+
     .checklist-class {
         width: 100%;
+        box-sizing: border-box;
+        display: block;
     }
-
 </style>
 
 <script>
     import VueFormGenerator from 'vue-form-generator';
     import 'vue-form-generator/dist/vfg.css';
     import _ from 'lodash';
+
     export default {
         name: "TermProperties",
         props: {
@@ -127,32 +121,33 @@
                                     inputType: "text",
                                     label: "Label",
                                     model: "label",
-                                    hint: "Label for the term",
-                                    readonly: false,
-                                    featured: true,
-                                    disabled: false,
                                     validator: VueFormGenerator.validators.string
-                                },
-                                {
-                                    type: "input",
-                                    inputType: "text",
-                                    label: "Source variable",
-                                    model: "sourceVariable",
-                                    readonly: true,
-                                    hint: "Variable name from dataset",
-                                    featured: true,
-                                    required: false,
-                                    disabled: true
                                 },
                                 {
                                     type: "input",
                                     inputType: "text",
                                     label: "Description",
                                     model: "description",
-                                    featured: true,
-                                    required: false,
-                                    hint: "An explanation of the nature, scope, or meaning of the new term.",
                                     validator: VueFormGenerator.validators.string
+                                },
+                                {
+                                    type: "checklist",
+                                    label: "isAbout",
+                                    model: "isAbout",
+                                    required: false,
+                                    multiSelect: true,
+                                    featured: true,
+                                    styleClasses: 'checklist-class',
+                                    values() {
+                                        return [
+                                            { name: "Option A", value: "A" },
+                                            { name: "Option B", value: "B" },
+                                            { name: "Option C", value: "C" }
+                                        ];
+                                    },
+                                    hint: "An explanation of the nature, scope, or meaning of the new term.",
+                                    help: "Check right column for definition of the related concept terms",
+                                    validator: VueFormGenerator.validators.array,
                                 },
                                 {
                                     type: "select",
@@ -172,10 +167,6 @@
                                     inputType: 'text',
                                     label: "datumType",
                                     model: "datumType",
-                                    hint: "What type of datum it is (e.g. range,count,scalar etc.): see IAO definitions",
-                                    readonly: false,
-                                    featured: true,
-                                    disabled: false,
                                     validator: VueFormGenerator.validators.string
                                 },
                                 {
@@ -183,10 +174,6 @@
                                     inputType: 'text',
                                     label: "Unit",
                                     model: "unitCode",
-                                    hint: "Unit of measurement following BIDS specification",
-                                    readonly: false,
-                                    featured: true,
-                                    disabled: false,
                                     validator: VueFormGenerator.validators.string
                                 },
                                 {
@@ -194,9 +181,6 @@
                                     inputType: "number",
                                     label: "Min Value",
                                     model: "minValue",
-                                    readonly: false,
-                                    featured: true,
-                                    disabled: false,
                                     validator: VueFormGenerator.validators.number
                                 },
                                 {
@@ -204,23 +188,7 @@
                                     inputType: 'number',
                                     label: "Max Value",
                                     model: "maxValue",
-                                    readonly: false,
-                                    featured: true,
-                                    disabled: false,
                                     validator: VueFormGenerator.validators.number
-                                },
-                                {
-                                    type: "checklist",
-                                    label: "isAbout",
-                                    model: "isAbout",
-                                    required: false,
-                                    multiSelect: true,
-                                    featured: true,
-                                    styleClasses: 'checklist-class',
-                                    values: [],
-                                    hint: "An explanation of the nature, scope, or meaning of the new term.",
-                                    help: "Check right column for definition of the related concept terms",
-                                    validator: VueFormGenerator.validators.array,
                                 }
                             ]
                         },
@@ -235,9 +203,6 @@
                                     featured: true,
                                     showRemoveButton: true,
                                     styleClasses: "col-sm-5",
-                                    // newElementButtonLabelClasses: "btn btn-solid",
-                                    // newElementButtonLabel: "Add new Option",
-                                    // validator: VueFormGenerator.validators.array,
                                 },
                                 {
                                     type: "array",
@@ -247,7 +212,6 @@
                                     showRemoveButton: true,
                                     styleClasses: "col-sm-5",
                                 }
-
                             ]
                         }
                     ]
@@ -261,63 +225,14 @@
                 final_list: []
             };
         },
-        watch: {
-            searchResults: {
-                deep: true,
-                immediate: true,
-                handler(newVal) {
-                    const searchLabels = _.map(newVal, s => {
-                        return s['label'];
-                    });
-                    searchLabels.unshift('No concept needed');
-                    this.schema.groups[0].fields[8].values = searchLabels;
-                }
-            },
-            selectedConcepts: {
-                handler(newVal) {
-
-                    const finallist = _.map(newVal, url => {
-                        const s = _.find(this.searchResults, concept => {
-                            return concept.url === url;
-                            // const newObj = { '@id': concept['url'],
-                            //                  'label': concept.label};
-                            // // delete concept.description;
-                            // // delete Object.assign(concept, {['@id']: concept['url'] })['url'];
-                            // return newObj;
-                        });
-                        // eslint-disable-next-line no-console
-                        // console.log(281, s);
-                        let newObj = {};
-                        if (s) {
-                            newObj = { '@id': s['url'],
-                                'label': s.label};
-                        }
-                        return newObj;
-                    });
-
-                    // _.filter(this.searchResults, concept => {
-                    //     if (concept.url )
-                    //     return concept.url === newVal;
-                    // });
-                    // const select_concept_lst = []
-                    this.model.isAbout = finallist;
-                    // eslint-disable-next-line no-console
-                    // console.log(272, newVal);
-                }
-            }
-        },
         methods: {
             onSave() {
-                // eslint-disable-next-line no-console
-                // console.log(284, this.model);
                 this.$emit('saveResponse', this.selectedTerm, this.model, this.final_list);
-                document.body.scrollTop = 0; // For Safari
-                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
             },
         },
         mounted() {
-            // eslint-disable-next-line no-console
-            // console.log(317, this.selectedConcepts, this.init);
             if (this.init) {
                 this.model = this.init;
             }
